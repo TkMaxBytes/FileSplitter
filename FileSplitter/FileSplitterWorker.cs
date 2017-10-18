@@ -15,7 +15,7 @@ namespace FileSplitter
     public class FileSplitterWorker
     {
         private FileInfo mobjFileToSplit = null;
-        private Int16 mintChars = 4;
+        
         /// <summary>
         /// The segment size of each of the segments for the file.
         /// </summary>
@@ -26,17 +26,16 @@ namespace FileSplitter
         public event FileSplitEventHandler FileSplit;
         public event FileSplitEventHandler FileSplitProgress;
         
-        public FileSplitterWorker(FileInfo objFileToSplit, Int16 intChars)
+        public FileSplitterWorker(FileInfo objFileToSplit, Int64 intSplitSize)
         {
             mobjFileToSplit = objFileToSplit;
-            mintChars = intChars;
-            mintSplitSize = objFileToSplit.Length / 2;
+            mintSplitSize = intSplitSize;
         }
 
         public Int64 SplitSize
         {
             get { return mintSplitSize; }
-            set { mintSplitSize = value; }
+            set { mintSplitSize = value + 1 ; }
         }
 
         /// <summary>
@@ -102,19 +101,17 @@ namespace FileSplitter
             OnFileSplit();
         }
 
-        private void SplitFileBin(FileInfo theFile, Int16 intBytesToRead)
+        private void SplitFileBin(FileInfo theFile, Int64  intBytesToRead, string strOutputDirectory)
         {
             BinaryReader strmIn = null;
             BinaryWriter strmOut = null;
             strmIn = new BinaryReader(new FileStream(theFile.FullName, FileMode.Open));
-            string strOutputFile = "c:\\temp\\test.txt";
-            if (File.Exists(strOutputFile))
-            {
-                File.Delete(strOutputFile);
-            }
-            strmOut = new BinaryWriter(new FileStream(strOutputFile, FileMode.CreateNew));
+            string strOutputFile = theFile.FullName + ".split.";
+ 
+            
             Int64 intBytesWritten = 0;
             Byte[] buff = { };
+            int intCurrFileNum = 0;
             while (strmIn.PeekChar() != -1)
             {
                 buff = new Byte[intBytesToRead];
@@ -126,22 +123,30 @@ namespace FileSplitter
                  * and should only be writting the non null 
                  * bytes to the file.
                 **/
-                
+                intCurrFileNum++;
+                if (File.Exists(strOutputFile + intCurrFileNum))
+                {
+                    File.Delete(strOutputFile + intCurrFileNum);
+                }
+                strmOut = new BinaryWriter(new FileStream(strOutputFile + intCurrFileNum, FileMode.CreateNew));
                 if (buff[buff.Length - 1] == 0)
                 {
                     byte byteFind = 0;
                     int idx = Array.IndexOf(buff, byteFind);
 
-                    Byte[] altBuf = new Byte[idx];
-                    Array.Copy(buff, altBuf, idx);
-                    strmOut.Write(altBuf);
+                    Byte[] altbuff = new Byte[idx];
+                    Array.Copy(buff, altbuff, idx);
+                    
+                    strmOut.Write(altbuff);
+                    intBytesWritten += altbuff.Length;
                 }
                 else
                 {
                     strmOut.Write(buff);
+                    intBytesWritten += buff.Length;
                 }
-                
-                intBytesWritten += buff.Length;
+                strmOut.Close();
+
                 /**Terrence Knoesen 
                  * Let the subscribers know that some progress has been made
                 **/
@@ -154,8 +159,8 @@ namespace FileSplitter
             **/
             OnFileSplit();
         }
-
-        private void SplitFileBin(FileInfo theFile, Int64 intSplitSize, string strOutputDirectory)
+        
+        private void SplitFileBinEX(FileInfo theFile, Int64 intSplitSize, string strOutputDirectory)
         {
             BinaryReader strmIn = null;
             BinaryWriter strmOut = null;
