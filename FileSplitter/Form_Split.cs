@@ -51,6 +51,8 @@ namespace FileSplitter
             mobjFileSplitter = new FileSplitterWorker(mobjFileToSplit, intBufSize);
             //Subscribe for the event.
             label_Progress.Text = "";
+            label_Progress.Refresh();
+            mobjFileSplitter.SplitSize = 1000;
             mobjFileSplitter.FileSplit += this.OnFileSplit;
             mobjFileSplitter.FileSplitProgress += this.OnFileSplitProgress;
             mobjFileSplitter.Start();

@@ -16,7 +16,11 @@ namespace FileSplitter
     {
         private FileInfo mobjFileToSplit = null;
         private Int16 mintChars = 4;
+        /// <summary>
+        /// The segment size of each of the segments for the file.
+        /// </summary>
         private Int64 mintSplitSize = 0;
+        private string mstrOutputDirectory;
 
         public delegate void FileSplitEventHandler(object source, FileSplitterArgs args);
         public event FileSplitEventHandler FileSplit;
@@ -34,7 +38,27 @@ namespace FileSplitter
             get { return mintSplitSize; }
             set { mintSplitSize = value; }
         }
-        
+
+        /// <summary>
+        /// The directory to which the segments will be written to
+        /// </summary>
+        public string OutputDirectory
+        {
+            get { return mstrOutputDirectory; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentNullException("Please specify an output directory.");
+                }
+                if (Directory.Exists(value))
+                {
+                    throw new ArgumentException("The output doesn't exist.");
+                }
+                mstrOutputDirectory = value;
+
+            }
+        }
 
         /// <summary>
         /// Start the work on splitting the file
@@ -47,7 +71,8 @@ namespace FileSplitter
             **/
 
             //this.SplitFileChar(mobjFileToSplit, mintChars);
-            this.SplitFileBin(mobjFileToSplit, mintChars);
+            //this.SplitFileBin(mobjFileToSplit, mintChars);
+            this.SplitFileBin(mobjFileToSplit, this.SplitSize, "c:\\temp\\");
 
         }
 
@@ -128,6 +153,52 @@ namespace FileSplitter
              * Raise the splitting of file complete event.
             **/
             OnFileSplit();
+        }
+
+        private void SplitFileBin(FileInfo theFile, Int64 intSplitSize, string strOutputDirectory)
+        {
+            BinaryReader strmIn = null;
+            BinaryWriter strmOut = null;
+            strmIn = new BinaryReader(new FileStream(theFile.FullName, FileMode.Open));
+            int intNumberOfSegments = 0;
+            intNumberOfSegments = (int)(theFile.Length / intSplitSize);
+
+
+
+            string strOutputFile = "c:\\temp\\test.txt";
+            if (File.Exists(strOutputFile))
+            {
+                File.Delete(strOutputFile);
+            }
+            Int64 intBytesToRead = 100;
+            strmOut = new BinaryWriter(new FileStream(strOutputFile, FileMode.CreateNew));
+            Int64 intBytesWritten = 0;
+            Byte[] buff = new Byte[1];
+            int intPer = 0;
+            Int64 intPerReport = (Int64)(theFile.Length * 0.5F);
+            while (strmIn.PeekChar() != -1)
+            {
+
+                strmOut.Write(strmIn.ReadByte());
+                intBytesWritten++;
+                intPer =  (int)((intBytesWritten / theFile.Length) * 100);
+               
+                if ((intBytesWritten % intPerReport) == 0)
+                {
+                    /**Terrence Knoesen 
+                    * Let the subscribers know that some progress has been made
+                    **/
+                    OnFileSplitProgress(intBytesWritten);
+                }
+                
+            }
+            strmIn.Close();
+            strmOut.Close();
+            /**Terrence Knoesen 
+             * Raise the splitting of file complete event.
+            **/
+            OnFileSplit();
+
         }
 
         protected virtual void OnFileSplit()
