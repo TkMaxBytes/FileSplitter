@@ -133,6 +133,7 @@
             // 
             // textBox_SplitSize
             // 
+            this.textBox_SplitSize.Enabled = false;
             this.textBox_SplitSize.Location = new System.Drawing.Point(284, 67);
             this.textBox_SplitSize.Name = "textBox_SplitSize";
             this.textBox_SplitSize.Size = new System.Drawing.Size(155, 20);

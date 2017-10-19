@@ -126,7 +126,10 @@ namespace FileSplitter
             if (int.TryParse(textBox_NumberOfFiles.Text, out numFiles))
             {
                 Int64 intFileSize = Int64.Parse(textBox_FileSize.Text);
+                textBox_SplitSize.Enabled = true;
+                textBox_SplitSize.Clear();
                 textBox_SplitSize.Text = (intFileSize / numFiles).ToString();
+                textBox_SplitSize.Enabled = false;
             }
         }
 
