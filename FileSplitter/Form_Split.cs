@@ -52,7 +52,7 @@ namespace FileSplitter
             }
             Int64 intBufSize = Int64.Parse(textBox_SplitSize.Text);
             mobjFileSplitter = new FileSplitterWorker(mobjFileToSplit, intBufSize);
-            //Subscribe for the event.
+            //Subscribe for the events.
             label_Progress.Text = "";
             label_Progress.Refresh();
             mobjFileSplitter.SplitSize = intBufSize;
