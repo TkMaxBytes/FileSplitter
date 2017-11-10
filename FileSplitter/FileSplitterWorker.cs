@@ -105,7 +105,13 @@ namespace FileSplitter
         {
             BinaryReader strmIn = null;
             BinaryWriter strmOut = null;
+            /**Terrence Knoesen 
+             * Open the original file for reading.
+            **/
             strmIn = new BinaryReader(new FileStream(theFile.FullName, FileMode.Open));
+            /**Terrence Knoesen 
+             * Create the name of the split file.  This is jus the name with out number.
+            **/
             string strOutputFile = theFile.FullName + ".split.";
  
             
@@ -114,21 +120,33 @@ namespace FileSplitter
             int intCurrFileNum = 0;
             while (strmIn.PeekChar() != -1)
             {
+                /**Terrence Knoesen
+                 * Read from the file in to the buff variable.
+                **/
                 buff = new Byte[intBytesToRead];
                 strmIn.Read(buff, 0, buff.Length);
+
                 /**Terrence Knoesen 
-                 * Check to see if the last item in the array
-                 * is not null.  If it is then we know
-                 * that we have reached the end of the file
-                 * and should only be writting the non null 
-                 * bytes to the file.
+                 * Check to see if there is a file by the same
+                 * name as the output file if there is then
+                 * delete it first.
                 **/
                 intCurrFileNum++;
                 if (File.Exists(strOutputFile + intCurrFileNum))
                 {
                     File.Delete(strOutputFile + intCurrFileNum);
                 }
+                /**Terrence Knoesen 
+                 * Create the output stream to disk.
+                **/
                 strmOut = new BinaryWriter(new FileStream(strOutputFile + intCurrFileNum, FileMode.CreateNew));
+                /**Terrence Knoesen 
+                * Check to see if the last item in the array
+                * is not null.  If it is then we know
+                * that we have reached the end of the file
+                * and should only be writting the non null 
+                * bytes to the file.
+                **/
                 if (buff[buff.Length - 1] == 0)
                 {
                     byte byteFind = 0;
